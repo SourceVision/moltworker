@@ -242,6 +242,8 @@ if (isOpenAI) {
             { id: 'gpt-5.2', name: 'GPT-5.2', contextWindow: 200000 },
             { id: 'gpt-5', name: 'GPT-5', contextWindow: 200000 },
             { id: 'gpt-4.5-preview', name: 'GPT-4.5 Preview', contextWindow: 128000 },
+            { id: 'gpt-4o', name: 'GPT-4o', contextWindow: 128000 },
+            { id: 'gpt-4o-mini', name: 'GPT-4o Mini', contextWindow: 128000 },
         ]
     };
     // Add models to the allowlist so they appear in /models
@@ -260,6 +262,7 @@ if (isOpenAI) {
         baseUrl: baseUrl,
         api: 'anthropic-messages',
         models: [
+            { id: 'claude-opus-4-6', name: 'Claude Opus 4.6', contextWindow: 200000 },
             { id: 'claude-opus-4-5-20251101', name: 'Claude Opus 4.5', contextWindow: 200000 },
             { id: 'claude-sonnet-4-5-20250929', name: 'Claude Sonnet 4.5', contextWindow: 200000 },
             { id: 'claude-haiku-4-5-20251001', name: 'Claude Haiku 4.5', contextWindow: 200000 },
