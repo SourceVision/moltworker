@@ -58,3 +58,6 @@ test/e2e/.dev.vars
 
 # Temporary e2e wrangler configs
 .wrangler-e2e-*.jsonc
+
+# R2 backup logs (actual backups are stored outside repo)
+scripts/backup-r2.log
