@@ -285,31 +285,23 @@ if (process.env.SLACK_BOT_TOKEN && process.env.SLACK_APP_TOKEN) {
 // ============================================================
 // Adds multiple models from both providers so /model can switch between them.
 // Only runs if AI Gateway credentials are fully configured.
+// ============================================================
+// MULTI-PROVIDER: OpenAI via AI Gateway
+// ============================================================
+// The built-in 'anthropic' provider (from onboard) auto-discovers Anthropic models,
+// so we only need to add OpenAI here. Requires OPENAI_API_KEY for authentication
+// (passed through the AI Gateway to OpenAI's API).
 const gwAccountId = process.env.CF_AI_GATEWAY_ACCOUNT_ID;
 const gwGatewayId = process.env.CF_AI_GATEWAY_GATEWAY_ID;
-const gwApiKey = process.env.CLOUDFLARE_AI_GATEWAY_API_KEY;
+const openaiKey = process.env.OPENAI_API_KEY;
 
-if (gwAccountId && gwGatewayId && gwApiKey) {
+if (gwAccountId && gwGatewayId && openaiKey) {
     config.models = config.models || {};
     config.models.providers = config.models.providers || {};
 
-    // Anthropic models via AI Gateway
-    config.models.providers['ai-gateway-anthropic'] = {
-        baseUrl: 'https://gateway.ai.cloudflare.com/v1/' + gwAccountId + '/' + gwGatewayId + '/anthropic',
-        apiKey: gwApiKey,
-        api: 'anthropic-messages',
-        models: [
-            { id: 'claude-opus-4-6', name: 'Claude Opus 4.6', contextWindow: 200000, maxTokens: 16000 },
-            { id: 'claude-sonnet-4-5-20250929', name: 'Claude Sonnet 4.5', contextWindow: 200000, maxTokens: 16000 },
-            { id: 'claude-haiku-4-5-20251001', name: 'Claude Haiku 4.5', contextWindow: 200000, maxTokens: 16000 },
-        ],
-    };
-    console.log('Added Anthropic models via AI Gateway');
-
-    // OpenAI models via AI Gateway
     config.models.providers['ai-gateway-openai'] = {
         baseUrl: 'https://gateway.ai.cloudflare.com/v1/' + gwAccountId + '/' + gwGatewayId + '/openai',
-        apiKey: gwApiKey,
+        apiKey: openaiKey,
         api: 'openai-completions',
         models: [
             { id: 'gpt-4o', name: 'GPT-4o', contextWindow: 128000, maxTokens: 16000 },
@@ -319,16 +311,10 @@ if (gwAccountId && gwGatewayId && gwApiKey) {
         ],
     };
     console.log('Added OpenAI models via AI Gateway');
-
-    // Set default model if not already set
-    if (!config.agents || !config.agents.defaults || !config.agents.defaults.model) {
-        config.agents = config.agents || {};
-        config.agents.defaults = config.agents.defaults || {};
-        config.agents.defaults.model = { primary: 'ai-gateway-anthropic/claude-sonnet-4-5-20250929' };
-        console.log('Set default model to Claude Sonnet 4.5');
-    }
+} else if (!openaiKey) {
+    console.log('OPENAI_API_KEY not set, skipping OpenAI multi-provider setup');
 } else {
-    console.log('AI Gateway credentials not fully configured, skipping multi-provider setup');
+    console.log('AI Gateway credentials not fully configured, skipping OpenAI setup');
 }
 
 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
