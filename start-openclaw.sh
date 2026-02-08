@@ -285,6 +285,31 @@ console.log('Configuration patched successfully');
 EOFPATCH
 
 # ============================================================
+# CONFIGURE MULTI-PROVIDER (Anthropic + OpenAI via AI Gateway)
+# ============================================================
+if [ -f "/usr/local/bin/scripts/configure-multi-provider.js" ] && \
+   [ -n "$CF_AI_GATEWAY_ACCOUNT_ID" ] && \
+   [ -n "$CF_AI_GATEWAY_GATEWAY_ID" ] && \
+   [ -n "$CLOUDFLARE_AI_GATEWAY_API_KEY" ]; then
+    echo "Configuring multi-provider AI Gateway setup..."
+    CONFIG_PATH="$CONFIG_FILE" node /usr/local/bin/scripts/configure-multi-provider.js
+else
+    if [ -z "$CF_AI_GATEWAY_ACCOUNT_ID" ] || [ -z "$CF_AI_GATEWAY_GATEWAY_ID" ] || [ -z "$CLOUDFLARE_AI_GATEWAY_API_KEY" ]; then
+        echo "AI Gateway credentials not fully configured, skipping multi-provider setup"
+    fi
+fi
+
+# ============================================================
+# UPDATE OPENCLAW (optional - if OPENCLAW_VERSION is set)
+# ============================================================
+if [ -n "$OPENCLAW_VERSION" ]; then
+    echo "Installing OpenClaw version: $OPENCLAW_VERSION"
+    npm install -g openclaw@"$OPENCLAW_VERSION"
+    INSTALLED_VERSION=$(openclaw --version 2>/dev/null || echo "unknown")
+    echo "OpenClaw installed: $INSTALLED_VERSION"
+fi
+
+# ============================================================
 # START GATEWAY
 # ============================================================
 echo "Starting OpenClaw Gateway..."
