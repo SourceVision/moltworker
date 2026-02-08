@@ -299,15 +299,16 @@ if (gwAccountId && gwGatewayId && openaiKey) {
     config.models = config.models || {};
     config.models.providers = config.models.providers || {};
 
+    var zeroCost = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 };
     config.models.providers['ai-gateway-openai'] = {
         baseUrl: 'https://gateway.ai.cloudflare.com/v1/' + gwAccountId + '/' + gwGatewayId + '/openai',
         apiKey: openaiKey,
         api: 'openai-completions',
         models: [
-            { id: 'gpt-4o', name: 'GPT-4o', contextWindow: 128000, maxTokens: 16000 },
-            { id: 'gpt-4o-mini', name: 'GPT-4o Mini', contextWindow: 128000, maxTokens: 16000 },
-            { id: 'o1', name: 'o1', contextWindow: 128000, maxTokens: 16000 },
-            { id: 'o1-mini', name: 'o1 Mini', contextWindow: 128000, maxTokens: 16000 },
+            { id: 'gpt-4o', name: 'GPT-4o', reasoning: false, input: ['text', 'image'], cost: zeroCost, contextWindow: 128000, maxTokens: 16384 },
+            { id: 'gpt-4o-mini', name: 'GPT-4o Mini', reasoning: false, input: ['text', 'image'], cost: zeroCost, contextWindow: 128000, maxTokens: 16384 },
+            { id: 'o1', name: 'o1', reasoning: true, input: ['text', 'image'], cost: zeroCost, contextWindow: 200000, maxTokens: 100000 },
+            { id: 'o1-mini', name: 'o1 Mini', reasoning: true, input: ['text'], cost: zeroCost, contextWindow: 128000, maxTokens: 65536 },
         ],
     };
     console.log('Added OpenAI models via AI Gateway');
