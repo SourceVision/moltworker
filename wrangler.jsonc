@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "effi",
+  "name": "moltbot-sandbox",
   "main": "src/index.ts",
   "compatibility_date": "2025-05-06",
   "compatibility_flags": ["nodejs_compat"],
@@ -69,10 +69,6 @@
   // Browser Rendering binding for CDP shim
   "browser": {
     "binding": "BROWSER",
-  },
-  // Non-secret environment variables
-  "vars": {
-    "OPENCLAW_VERSION": "latest",
   },
   // Note: CF_ACCOUNT_ID should be set via `wrangler secret put CF_ACCOUNT_ID`
   // Secrets to configure via `wrangler secret put`:

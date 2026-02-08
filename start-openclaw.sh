@@ -280,57 +280,9 @@ if (process.env.SLACK_BOT_TOKEN && process.env.SLACK_APP_TOKEN) {
     };
 }
 
-// ============================================================
-// MULTI-PROVIDER AI GATEWAY (Anthropic + OpenAI)
-// ============================================================
-// Adds multiple models from both providers so /model can switch between them.
-// Only runs if AI Gateway credentials are fully configured.
-// ============================================================
-// MULTI-PROVIDER: OpenAI via AI Gateway
-// ============================================================
-// The built-in 'anthropic' provider (from onboard) auto-discovers Anthropic models,
-// so we only need to add OpenAI here. Requires OPENAI_API_KEY for authentication
-// (passed through the AI Gateway to OpenAI's API).
-const gwAccountId = process.env.CF_AI_GATEWAY_ACCOUNT_ID;
-const gwGatewayId = process.env.CF_AI_GATEWAY_GATEWAY_ID;
-const openaiKey = process.env.OPENAI_API_KEY;
-
-if (gwAccountId && gwGatewayId && openaiKey) {
-    config.models = config.models || {};
-    config.models.providers = config.models.providers || {};
-
-    var zeroCost = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 };
-    config.models.providers['ai-gateway-openai'] = {
-        baseUrl: 'https://gateway.ai.cloudflare.com/v1/' + gwAccountId + '/' + gwGatewayId + '/openai',
-        apiKey: openaiKey,
-        api: 'openai-completions',
-        models: [
-            { id: 'gpt-4o', name: 'GPT-4o', reasoning: false, input: ['text', 'image'], cost: zeroCost, contextWindow: 128000, maxTokens: 16384 },
-            { id: 'gpt-4o-mini', name: 'GPT-4o Mini', reasoning: false, input: ['text', 'image'], cost: zeroCost, contextWindow: 128000, maxTokens: 16384 },
-            { id: 'o1', name: 'o1', reasoning: true, input: ['text', 'image'], cost: zeroCost, contextWindow: 200000, maxTokens: 100000 },
-            { id: 'o1-mini', name: 'o1 Mini', reasoning: true, input: ['text'], cost: zeroCost, contextWindow: 128000, maxTokens: 65536 },
-        ],
-    };
-    console.log('Added OpenAI models via AI Gateway');
-} else if (!openaiKey) {
-    console.log('OPENAI_API_KEY not set, skipping OpenAI multi-provider setup');
-} else {
-    console.log('AI Gateway credentials not fully configured, skipping OpenAI setup');
-}
-
 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 console.log('Configuration patched successfully');
 EOFPATCH
-
-# ============================================================
-# UPDATE OPENCLAW (optional - if OPENCLAW_VERSION is set)
-# ============================================================
-if [ -n "$OPENCLAW_VERSION" ]; then
-    echo "Installing OpenClaw version: $OPENCLAW_VERSION"
-    npm install -g openclaw@"$OPENCLAW_VERSION"
-    INSTALLED_VERSION=$(openclaw --version 2>/dev/null || echo "unknown")
-    echo "OpenClaw installed: $INSTALLED_VERSION"
-fi
 
 # ============================================================
 # START GATEWAY

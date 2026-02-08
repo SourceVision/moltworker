@@ -31,12 +31,10 @@ RUN mkdir -p /root/.openclaw \
     && mkdir -p /root/clawd \
     && mkdir -p /root/clawd/skills
 
-# Copy startup script and helper scripts
-# Build cache bust: 2026-02-08-v30-multi-provider
+# Copy startup script
+# Build cache bust: 2026-02-06-v29-sync-workspace
 COPY start-openclaw.sh /usr/local/bin/start-openclaw.sh
-COPY scripts/ /usr/local/bin/scripts/
-RUN chmod +x /usr/local/bin/start-openclaw.sh \
-    && chmod +x /usr/local/bin/scripts/*.js
+RUN chmod +x /usr/local/bin/start-openclaw.sh
 
 # Copy custom skills
 COPY skills/ /root/clawd/skills/
