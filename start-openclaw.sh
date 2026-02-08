@@ -280,24 +280,60 @@ if (process.env.SLACK_BOT_TOKEN && process.env.SLACK_APP_TOKEN) {
     };
 }
 
+// ============================================================
+// MULTI-PROVIDER AI GATEWAY (Anthropic + OpenAI)
+// ============================================================
+// Adds multiple models from both providers so /model can switch between them.
+// Only runs if AI Gateway credentials are fully configured.
+const gwAccountId = process.env.CF_AI_GATEWAY_ACCOUNT_ID;
+const gwGatewayId = process.env.CF_AI_GATEWAY_GATEWAY_ID;
+const gwApiKey = process.env.CLOUDFLARE_AI_GATEWAY_API_KEY;
+
+if (gwAccountId && gwGatewayId && gwApiKey) {
+    config.models = config.models || {};
+    config.models.providers = config.models.providers || {};
+
+    // Anthropic models via AI Gateway
+    config.models.providers['ai-gateway-anthropic'] = {
+        baseUrl: 'https://gateway.ai.cloudflare.com/v1/' + gwAccountId + '/' + gwGatewayId + '/anthropic',
+        apiKey: gwApiKey,
+        api: 'anthropic-messages',
+        models: [
+            { id: 'claude-opus-4-6', name: 'Claude Opus 4.6', contextWindow: 200000, maxTokens: 16000 },
+            { id: 'claude-sonnet-4-5-20250929', name: 'Claude Sonnet 4.5', contextWindow: 200000, maxTokens: 16000 },
+            { id: 'claude-haiku-4-5-20251001', name: 'Claude Haiku 4.5', contextWindow: 200000, maxTokens: 16000 },
+        ],
+    };
+    console.log('Added Anthropic models via AI Gateway');
+
+    // OpenAI models via AI Gateway
+    config.models.providers['ai-gateway-openai'] = {
+        baseUrl: 'https://gateway.ai.cloudflare.com/v1/' + gwAccountId + '/' + gwGatewayId + '/openai',
+        apiKey: gwApiKey,
+        api: 'openai-completions',
+        models: [
+            { id: 'gpt-4o', name: 'GPT-4o', contextWindow: 128000, maxTokens: 16000 },
+            { id: 'gpt-4o-mini', name: 'GPT-4o Mini', contextWindow: 128000, maxTokens: 16000 },
+            { id: 'o1', name: 'o1', contextWindow: 128000, maxTokens: 16000 },
+            { id: 'o1-mini', name: 'o1 Mini', contextWindow: 128000, maxTokens: 16000 },
+        ],
+    };
+    console.log('Added OpenAI models via AI Gateway');
+
+    // Set default model if not already set
+    if (!config.agents || !config.agents.defaults || !config.agents.defaults.model) {
+        config.agents = config.agents || {};
+        config.agents.defaults = config.agents.defaults || {};
+        config.agents.defaults.model = { primary: 'ai-gateway-anthropic/claude-sonnet-4-5-20250929' };
+        console.log('Set default model to Claude Sonnet 4.5');
+    }
+} else {
+    console.log('AI Gateway credentials not fully configured, skipping multi-provider setup');
+}
+
 fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 console.log('Configuration patched successfully');
 EOFPATCH
-
-# ============================================================
-# CONFIGURE MULTI-PROVIDER (Anthropic + OpenAI via AI Gateway)
-# ============================================================
-if [ -f "/usr/local/bin/scripts/configure-multi-provider.js" ] && \
-   [ -n "$CF_AI_GATEWAY_ACCOUNT_ID" ] && \
-   [ -n "$CF_AI_GATEWAY_GATEWAY_ID" ] && \
-   [ -n "$CLOUDFLARE_AI_GATEWAY_API_KEY" ]; then
-    echo "Configuring multi-provider AI Gateway setup..."
-    CONFIG_PATH="$CONFIG_FILE" node /usr/local/bin/scripts/configure-multi-provider.js
-else
-    if [ -z "$CF_AI_GATEWAY_ACCOUNT_ID" ] || [ -z "$CF_AI_GATEWAY_GATEWAY_ID" ] || [ -z "$CLOUDFLARE_AI_GATEWAY_API_KEY" ]; then
-        echo "AI Gateway credentials not fully configured, skipping multi-provider setup"
-    fi
-fi
 
 # ============================================================
 # UPDATE OPENCLAW (optional - if OPENCLAW_VERSION is set)
